@@ -25,15 +25,12 @@ export default function InfoPopup({ isOpen, onClose, title, children }: InfoPopu
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       ></div>
       
-      {/* Modal */}
       <div className="relative bg-gray-900 rounded-xl shadow-2xl max-w-md w-full border border-gray-700 animate-in fade-in zoom-in duration-200">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
           <button
@@ -46,12 +43,10 @@ export default function InfoPopup({ isOpen, onClose, title, children }: InfoPopu
           </button>
         </div>
         
-        {/* Content */}
         <div className="p-4 text-gray-300">
           {children}
         </div>
         
-        {/* Footer */}
         <div className="p-4 border-t border-gray-700">
           <button
             onClick={onClose}

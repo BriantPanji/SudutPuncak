@@ -22,16 +22,14 @@ export const useSearchHistory = create<SearchHistoryStore>()(
         if (!trimmedQuery) return;
         
         set((state) => {
-          // Remove duplicate if exists
           const filteredHistory = state.history.filter(
             (item) => item.query.toLowerCase() !== trimmedQuery.toLowerCase()
           );
           
-          // Add new item at the beginning
           const newHistory = [
             { query: trimmedQuery, timestamp: Date.now() },
             ...filteredHistory,
-          ].slice(0, 10); // Keep only last 10 searches
+          ].slice(0, 10); // cuma 10 disimpan
           
           return { history: newHistory };
         });

@@ -17,7 +17,6 @@ export default function DetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Popup states
   const [showCategoryPopup, setShowCategoryPopup] = useState(false);
   const [showStatusPopup, setShowStatusPopup] = useState(false);
   const [showRestrictionPopup, setShowRestrictionPopup] = useState(false);
@@ -34,14 +33,12 @@ export default function DetailPage() {
           setError(data.error);
         } else if (data.mountain) {
           setMountain(data.mountain);
-          // Add to recently viewed
           addMountain({
             name: data.mountain.name,
             province: data.mountain.province,
             imageUrl: data.mountain.imageUrl,
           });
 
-          // Fetch related mountains
           const relatedResponse = await fetch(`/api/search?relatedTo=${encodeURIComponent(data.mountain.name)}`);
           const relatedData: RelatedResponse = await relatedResponse.json();
           if (relatedData.relatedMountains) {

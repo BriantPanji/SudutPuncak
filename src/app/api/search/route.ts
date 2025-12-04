@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Jena Fuseki endpoint configuration
 const FUSEKI_ENDPOINT = process.env.FUSEKI_ENDPOINT || "http://localhost:3030/gunung/query";
 
 interface SparqlBinding {
@@ -16,10 +15,6 @@ interface SparqlResults {
   };
 }
 
-/**
- * Sanitizes user input for safe use in SPARQL queries
- * Escapes special characters that could be used for SPARQL injection
- */
 function sanitizeSparqlInput(input: string): string {
   return input
     .replace(/\\/g, "\\\\")
@@ -30,30 +25,22 @@ function sanitizeSparqlInput(input: string): string {
     .replace(/\t/g, "\\t");
 }
 
-/**
- * Generate abbreviation patterns from a name
- * e.g., "Semeru" -> ["se", "sem", "seme", "semer", "smr", "smru"]
- */
 function generateAbbreviations(name: string): string[] {
   const lower = name.toLowerCase();
   const abbrevs: string[] = [];
   
-  // Progressive prefixes (starting from 2 characters to avoid single char matches)
   for (let i = 2; i <= lower.length; i++) {
     abbrevs.push(lower.substring(0, i));
   }
   
-  // Consonant-only abbreviation (smr for semeru)
   const consonants = lower.replace(/[aeiou]/g, '');
   if (consonants.length >= 2) {
     abbrevs.push(consonants);
-    // Also add progressive consonant prefixes
     for (let i = 2; i <= consonants.length; i++) {
       abbrevs.push(consonants.substring(0, i));
     }
   }
   
-  // First letter + consonants after vowels
   const firstAndConsonants = lower[0] + lower.slice(1).replace(/[aeiou]/g, '');
   if (firstAndConsonants.length >= 2) {
     abbrevs.push(firstAndConsonants);
@@ -62,25 +49,17 @@ function generateAbbreviations(name: string): string[] {
   return [...new Set(abbrevs)];
 }
 
-/**
- * Calculate similarity between two strings using character-based matching
- * Returns a score between 0 and 1
- */
 function calculateSimilarity(query: string, name: string): number {
   const q = query.toLowerCase();
   const n = name.toLowerCase();
   
-  // Exact match
   if (n === q) return 1.0;
   
-  // Name starts with query
   if (n.startsWith(q)) return 0.95;
   
-  // Query is an abbreviation of name
   const abbrevs = generateAbbreviations(n);
   if (abbrevs.includes(q)) return 0.85;
   
-  // Check if q contains all characters of name's abbreviation in order (fuzzy match)
   let j = 0;
   for (let i = 0; i < n.length && j < q.length; i++) {
     if (n[i] === q[j]) {
@@ -91,12 +70,10 @@ function calculateSimilarity(query: string, name: string): number {
     return 0.7 * (q.length / n.length);
   }
   
-  // Check for substring match
   if (n.includes(q)) {
     return 0.6;
   }
   
-  // Check for partial character match
   let matchCount = 0;
   for (const char of q) {
     if (n.includes(char)) {
@@ -107,9 +84,6 @@ function calculateSimilarity(query: string, name: string): number {
   return (matchCount / Math.max(q.length, n.length)) * 0.4;
 }
 
-/**
- * Check if query is a "best match" (high similarity with name)
- */
 function isBestMatch(name: string, query: string): boolean {
   const similarity = calculateSimilarity(query, name);
   return similarity >= 0.7;
@@ -121,21 +95,18 @@ export async function GET(request: NextRequest) {
   const mountainName = searchParams.get("name") || "";
   const province = searchParams.get("province") || "";
   const minElevation = searchParams.get("minElevation") || "";
-  const sortBy = searchParams.get("sortBy") || "name"; // name, province, elevation
-  const sortOrder = searchParams.get("sortOrder") || "asc"; // asc, desc
-  const relatedTo = searchParams.get("relatedTo") || ""; // For related mountains
+  const sortBy = searchParams.get("sortBy") || "name"; 
+  const sortOrder = searchParams.get("sortOrder") || "asc"; 
+  const relatedTo = searchParams.get("relatedTo") || ""; 
 
-  // If requesting specific mountain by name
   if (mountainName) {
     return await getMountainByName(mountainName);
   }
 
-  // If requesting related mountains
   if (relatedTo) {
     return await getRelatedMountains(relatedTo);
   }
 
-  // If requesting provinces list
   if (searchParams.get("provinces") === "true") {
     return await getProvinces();
   }
@@ -144,7 +115,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ bestMatches: [], otherMatches: [], provinces: [] });
   }
 
-  // SPARQL query to get all mountains (we'll filter client-side for fuzzy matching)
   const sparqlQuery = `
     PREFIX sdp: <http://sudutpuncak.com/ontology#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -212,7 +182,6 @@ export async function GET(request: NextRequest) {
 
     const data: SparqlResults = await response.json();
 
-    // Transform results
     let allResults = data.results.bindings.map((binding) => ({
       uri: binding.mountain?.value || "",
       name: binding.name?.value || "",
@@ -229,14 +198,12 @@ export async function GET(request: NextRequest) {
       restrictedUntil: binding.restrictedUntil?.value || null,
     }));
 
-    // Apply province filter
     if (province) {
       allResults = allResults.filter(
         (r) => r.province?.toLowerCase() === province.toLowerCase()
       );
     }
 
-    // Apply minimum elevation filter
     if (minElevation) {
       const minElev = parseInt(minElevation);
       if (!isNaN(minElev)) {
@@ -246,7 +213,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Filter and categorize results by query
     const bestMatches: typeof allResults = [];
     const otherMatches: { result: typeof allResults[0]; score: number }[] = [];
 
@@ -257,43 +223,35 @@ export async function GET(request: NextRequest) {
         const provinceLower = result.province?.toLowerCase() || "";
         const descriptionLower = result.description?.toLowerCase() || "";
 
-        // Calculate similarity score for name
         const nameScore = calculateSimilarity(queryLower, result.name);
         
-        // Check for best match (high similarity with name)
         if (isBestMatch(result.name, query)) {
           bestMatches.push(result);
         } else {
-          // Calculate other scores
           const provinceScore = provinceLower.includes(queryLower) ? 0.5 : calculateSimilarity(queryLower, provinceLower) * 0.4;
           const descriptionScore = descriptionLower.includes(queryLower) ? 0.4 : 0;
           
           const maxScore = Math.max(nameScore, provinceScore, descriptionScore);
           
-          // Include if score is above threshold
           if (maxScore > 0.15) {
             otherMatches.push({ result, score: maxScore });
           }
         }
       }
 
-      // Sort best matches by similarity
       bestMatches.sort((a, b) => {
         const scoreA = calculateSimilarity(queryLower, a.name);
         const scoreB = calculateSimilarity(queryLower, b.name);
         return scoreB - scoreA;
       });
 
-      // Sort other matches by score
       otherMatches.sort((a, b) => b.score - a.score);
     } else {
-      // No query, just filters - all results go to otherMatches
       for (const result of allResults) {
         otherMatches.push({ result, score: 0.5 });
       }
     }
 
-    // Apply sorting to final results
     const sortResults = (results: typeof allResults) => {
       return results.sort((a, b) => {
         let comparison = 0;
@@ -314,7 +272,6 @@ export async function GET(request: NextRequest) {
       });
     };
 
-    // Only apply sorting if explicitly requested (not during fuzzy search)
     const finalBestMatches = query.trim() ? bestMatches : sortResults(bestMatches);
     const finalOtherMatches = query.trim() 
       ? otherMatches.map((m) => m.result)
@@ -376,7 +333,6 @@ async function getProvinces() {
 async function getRelatedMountains(mountainName: string) {
   const sanitizedName = sanitizeSparqlInput(mountainName);
 
-  // First, get the mountain's province and elevation
   const getMountainQuery = `
     PREFIX sdp: <http://sudutpuncak.com/ontology#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -419,7 +375,6 @@ async function getRelatedMountains(mountainName: string) {
     const province = binding.province?.value || "";
     const elevation = binding.elevation?.value ? parseInt(binding.elevation.value) : 0;
 
-    // Build the SPARQL filter for related mountains
     const elevationMin = elevation - 500;
     const elevationMax = elevation + 500;
     const elevationFilter = `BOUND(?elevation) && ?elevation >= ${elevationMin} && ?elevation <= ${elevationMax}`;
@@ -427,7 +382,6 @@ async function getRelatedMountains(mountainName: string) {
       ? `FILTER(?province = "${province}" || (${elevationFilter}))`
       : `FILTER(${elevationFilter})`;
 
-    // Get related mountains (same province OR similar elevation ±500m)
     const relatedQuery = `
       PREFIX sdp: <http://sudutpuncak.com/ontology#>
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

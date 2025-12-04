@@ -13,7 +13,6 @@ export default function MountainCard({ mountain }: MountainCardProps) {
   return (
     <Link href={`/detail/${encodeURIComponent(mountain.name)}`} className="h-full">
       <div className="bg-slate-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-slate-700 h-full flex flex-col w-full">
-        {/* Mountain Image */}
         <div className="h-36 xs:h-40 sm:h-44 bg-slate-700 relative overflow-hidden flex-shrink-0">
           <img
             src={imageUrl}
@@ -42,7 +41,6 @@ export default function MountainCard({ mountain }: MountainCardProps) {
           )}
         </div>
 
-        {/* Mountain Info */}
         <div className="p-3 flex-1 flex flex-col">
           <h3 className="text-sm xs:text-base font-semibold text-white mb-2 truncate">
             {mountain.name}

@@ -12,7 +12,6 @@ function SearchContent() {
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
 
-  // Initialize filter states from URL parameters
   const initialProvince = searchParams.get('province') || '';
   const initialMinElevation = searchParams.get('minElevation') || '';
   const initialSortBy = searchParams.get('sortBy') || 'relevance';
@@ -25,7 +24,6 @@ function SearchContent() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Filter states - initialize from URL
   const [provinces, setProvinces] = useState<string[]>([]);
   const [selectedProvince, setSelectedProvince] = useState(initialProvince);
   const [minElevation, setMinElevation] = useState(initialMinElevation);
@@ -37,7 +35,6 @@ function SearchContent() {
 
   const { addSearch } = useSearchHistory();
 
-  // Fetch provinces on mount
   useEffect(() => {
     async function fetchProvinces() {
       try {
@@ -91,12 +88,10 @@ function SearchContent() {
     }
   }, [addSearch]);
 
-  // Search on initial load if query exists or filters are applied
   useEffect(() => {
     if (initialQuery || initialProvince || initialMinElevation || initialSortBy !== 'relevance') {
       handleSearch(initialQuery, initialProvince, initialMinElevation, initialSortBy, initialSortOrder);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery, initialProvince, initialMinElevation, initialSortBy, initialSortOrder]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -141,7 +136,6 @@ function SearchContent() {
     handleSearch(searchQuery, '', '', 'relevance', 'asc');
   };
 
-  // Helper function to update URL with current filters
   const updateURLWithFilters = (province: string, elevation: string, sort: string, order: string) => {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set('q', searchQuery);
@@ -156,7 +150,6 @@ function SearchContent() {
 
   const totalResults = bestMatches.length + otherMatches.length;
 
-  // Client-side sorting for display
   const sortResults = (results: MountainResult[]) => {
     if (sortBy === 'relevance') return results;
 

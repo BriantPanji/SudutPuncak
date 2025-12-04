@@ -15,7 +15,6 @@ export default function Home() {
   const { recentMountains } = useRecentViewed();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -33,12 +32,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
-      {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-2xl">
-          {/* Logo and Title */}
           <div className="text-center mb-8">
-            {/* <div className="text-6xl mb-4">🏔️</div> */}
             <div className="text-6xl mb-4 flex items-center justify-center"><Image src="/gunung.png" alt="Logo Gunung" width={125} height={125} /></div>
             <h1 className="text-3xl xs:text-4xl sm:text-5xl font-bold text-teal-400 mb-2">
               Sudut Puncak
@@ -48,7 +44,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Search Form */}
           <form onSubmit={handleSearch} className="mb-8">
             <div className="flex flex-col xs:flex-row gap-3">
               <div className="flex-1 relative">
@@ -78,7 +73,6 @@ export default function Home() {
             </p>
           </form>
 
-          {/* Search History */}
           {mounted && history.length > 0 && (
             <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
@@ -121,7 +115,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Recently Viewed Mountains */}
           {mounted && recentMountains.length > 0 && (
             <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-4">
               <h2 className="text-sm font-semibold text-gray-300 flex items-center gap-2 mb-3">
@@ -160,7 +153,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="bg-slate-800 border-t border-slate-700">
         <div className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
           <p>© 2025 Sudut Corp. All rights reserved.</p>

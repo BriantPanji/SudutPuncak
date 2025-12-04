@@ -20,16 +20,15 @@ export const useRecentViewed = create<RecentViewedStore>()(
       recentMountains: [],
       addMountain: (mountain) => {
         set((state) => {
-          // Remove duplicate if exists
+          // hapus kalo adaa
           const filtered = state.recentMountains.filter(
             (m) => m.name.toLowerCase() !== mountain.name.toLowerCase()
           );
           
-          // Add new at the beginning
           const newList = [
             { ...mountain, timestamp: Date.now() },
             ...filtered,
-          ].slice(0, 5); // Keep only last 5
+          ].slice(0, 5); // biar cuma 5
           
           return { recentMountains: newList };
         });
