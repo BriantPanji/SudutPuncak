@@ -35,7 +35,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-2xl">
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4 flex items-center justify-center"><Image src="/gunung.png" alt="Logo Gunung" width={125} height={125} /></div>
+            <div className="text-6xl mb-4 flex items-center justify-center"><Image src="/Logo_SudutPuncak.svg" alt="Logo Gunung" width={125} height={125} /></div>
             <h1 className="text-3xl xs:text-4xl sm:text-5xl font-bold text-teal-400 mb-2">
               Sudut Puncak
             </h1>
